@@ -1,84 +1,33 @@
-import { Button, Layout, Menu, MenuProps } from 'antd';
-import { Outlet } from 'react-router-dom';
+import { withErrorBoundary } from 'react-error-boundary';
+import { Route, Routes } from 'react-router-dom';
+import RequireAuth from '../components/RequireAuth/RequireAuth';
+import {
+  CREATE_APARTMENT_PAGE,
+  CREATE_ROOM_PAGE,
+  LOGIN_PAGE,
+  MAIN_PAGE,
+} from '../helpers/constants/routeConst';
+import ErrorPage from '../pages/Error/Error';
+import CreateApartment from '../pages/createApartment/CreateApartment';
+import CreateRoom from '../pages/createRoom/CreateRoom';
+import Login from '../pages/login/Login';
+import Main from '../pages/main/Main';
+import AppLayout from '../components/Layouts/AppLayout';
 
-const { Header, Sider, Content } = Layout;
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-function getItem(
-  label: React.ReactNode,
-  key: React.Key,
-  icon?: React.ReactNode,
-  children?: MenuItem[],
-  type?: 'group'
-): MenuItem {
-  return {
-    key,
-    icon,
-    children,
-    label,
-    type,
-  } as MenuItem;
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path={LOGIN_PAGE} element={<Login />} />
+      <Route path="*" element={<ErrorPage />} />
+      <Route element={<RequireAuth />}>
+        <Route path={MAIN_PAGE} element={<AppLayout />}>
+          <Route path={MAIN_PAGE} element={<Main />} />
+          <Route path={CREATE_APARTMENT_PAGE} element={<CreateApartment />} />
+          <Route path={CREATE_ROOM_PAGE} element={<CreateRoom />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
 }
 
-const items: MenuProps['items'] = [
-  getItem(<NavLink to={`${MAIN_PAGE}`}>Главная</NavLink>, 'sub1', <HomeOutlined rev={undefined} />),
-  getItem(<NavLink to={`${MAIN_PAGE}`}>Главная</NavLink>, 'sub1', <HomeOutlined rev={undefined} />),
-  getItem(<NavLink to={`${MAIN_PAGE}`}>Главная</NavLink>, 'sub1', <HomeOutlined rev={undefined} />),
-];
-
-function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
-  <Layout style={{ minHeight: '100vh' }}>
-    <Sider
-      trigger={null}
-      collapsible
-      collapsed={collapsed}
-      style={{ background: colorBgContainer }}
-    >
-      <div style={{ fontSize: '25px', marginLeft: '20px', marginTop: '20px' }}>Logo</div>
-      <Menu
-        style={{ background: colorBgContainer, marginTop: '40px' }}
-        theme="light"
-        mode="inline"
-        defaultSelectedKeys={['sub1']}
-        items={items}
-      />
-    </Sider>
-    <Layout>
-      <Header style={{ padding: 0, background: colorBgContainer }}>
-        <Button
-          type="text"
-          icon={
-            collapsed ? (
-              <MenuUnfoldOutlined rev={undefined} />
-            ) : (
-              <MenuFoldOutlined rev={undefined} />
-            )
-          }
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            fontSize: '16px',
-            width: 64,
-            height: 64,
-          }}
-        />
-      </Header>
-      <Content
-        style={{
-          margin: '24px 16px',
-          padding: 24,
-          minHeight: 280,
-          background: colorBgContainer,
-        }}
-      >
-        <Outlet />
-      </Content>
-    </Layout>
-  </Layout>;
-}
-
-export default AppLayout;
+export default withErrorBoundary(AppRoutes, { fallback: <ErrorPage /> });
